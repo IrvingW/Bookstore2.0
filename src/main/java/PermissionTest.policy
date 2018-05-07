@@ -1,0 +1,58 @@
+grant
+{
+   permission java.awt.AWTPermission "showWindowWithoutWarningBanner";
+   permission java.awt.AWTPermission "accessEventQueue";
+   permission javax.security.auth.AuthPermission "createLoginContext.Login1";
+   permission javax.security.auth.AuthPermission "doAsPrivileged";
+   permission javax.security.auth.AuthPermission "modifyPrincipals";
+   permission java.io.FilePermission "src/main/java/password.txt", "read";
+
+};
+
+grant
+{
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab/WEB-INF/classes/org/springframework/beans/factory/support/ConstructorResolver$1.class","read";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab/WEB-INF/classes/org/apache/logging/log4j/message/ParameterizedMessage.class","read";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/-", "read";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab", "read";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab/WEB-INF/classes/org/springframework/beans/factory/support/SimpleInstantiationStrategy$2.class","read";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab/WEB-INF/classes/org/apache/logging/log4j/message/ParameterFormatter.class", "read";
+   permission java.lang.management.ManagementPermission "monitor";
+   permission java.lang.RuntimePermission "*";
+   permission java.io.FilePermission "/usr/local/tomcat8/webapps/ROOT.war", "read";
+   permission java.net.SocketPermission "127.0.0.1:58834", "accept,resolve";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/target/yab/WEB-INF/classes/org/springframework/beans/factory/support/AbstractAutowireCapableBeanFactory$5.class","read";
+   permission java.io.FilePermission "/usr/local/tomcat8/webapps/ROOT/-", "read";
+   permission java.io.FilePermission "/Users/lvjiawei/Library/Caches/IntelliJIdea2017.3/tomcat/Unnamed_YetAnotherBookstore/-","read,write,delete";
+   permission java.io.FilePermission "/Users/lvjiawei/YetAnotherBookstore/-", "read";
+   permission java.io.FilePermission "/usr/local/tomcat8/webapps/ROOT", "read";
+   permission java.io.FilePermission "/usr/local/tomcat8/webapps/-", "read";
+   permission java.io.FilePermission "/usr/local/tomcat8/-", "read";
+   permission java.net.SocketPermission "[0:0:0:0:0:0:0:1]:0", "accept,resolve";
+   permission java.util.PropertyPermission "*", "read";
+   permission java.util.PropertyPermission "java.security.policy", "write";
+   permission java.security.SecurityPermission "getProperty.authconfigprovider.factory";
+   permission java.net.SocketPermission "127.0.0.1:*" , "accept,resolve,connect";
+   permission javax.management.MBeanPermission "*", "registerMBean";
+   permission javax.management.MBeanTrustPermission "register";
+   permission java.util.logging.LoggingPermission "control";
+   permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+   permission java.io.FilePermission "/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/-", "read";
+   permission java.util.PropertyPermission "java.security.auth.login.config", "read,write";
+   permission javax.management.MBeanServerPermission "createMBeanServer";
+};
+
+grant
+{
+    permission service.imp.CategoryCheckPermission "言情小说,人才管理,传记", "adult";
+};
+
+grant principal service.SimplePrincipal "admin"
+{
+   permission java.util.PropertyPermission "*", "read";
+   //permission java.io.FilePermission "src/main/java/article.txt", "read";
+   permission java.io.FilePermission "/Users/lvjiawei/article.txt", "read";
+};
+
+
+

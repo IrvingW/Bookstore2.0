@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="model.Book" table="Book">
+        <id name="bookID" column="book_id">
+            <generator class="native"/>
+        </id>
+        <property name="bookName" column="bookname" />
+        <property name="isbn" column="isbn" />
+        <property name="author" column="author" />
+        <property name="press" column="press" />
+        <property name="category1" column="category1" />
+        <property name="category2" column="category2" />
+        <property name="profileID" column="profile_id" />
+        <property name="imageID" column="image_id" />
+        <property name="price" column="price" />
+        <property name="amount" column="amount" />
+    </class>
+</hibernate-mapping>

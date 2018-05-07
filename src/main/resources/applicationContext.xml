@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.2.xsd
+        http://www.springframework.org/schema/data/mongo
+        http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd
+        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+        http://cxf.apache.org/jaxws">
+
+
+    <context:component-scan base-package="webService"/>
+
+
+
+    <jaxrs:server id="webService" address="/">
+        <jaxrs:inInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"></bean>
+        </jaxrs:inInterceptors>
+        <jaxrs:outInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"></bean>
+        </jaxrs:outInterceptors>
+
+        <jaxrs:serviceBeans>
+            <ref bean="testWebService"/>
+        </jaxrs:serviceBeans>
+
+
+        <jaxrs:extensionMappings>
+            <entry key="json" value="application/json"/>
+            <entry key="xml" value="application/xml"/>
+        </jaxrs:extensionMappings>
+
+        <jaxrs:languageMappings>
+
+        </jaxrs:languageMappings>
+
+        <jaxrs:providers>
+            <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider"/>
+        </jaxrs:providers>
+
+    </jaxrs:server>
+
+
+
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/bookstore2?useUnicode=true&amp;characterEncoding=UTF-8" />
+        <property name="username" value="root" />
+        <property name="password" value="123456" />
+    </bean>
+
+    <!--
+
+    <bean id="dataSourceR" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3308/test_master_slave?useUnicode=true&amp;characterEncoding=UTF-8" />
+        <property name="username" value="root" />
+        <property name="password" value="123456" />
+    </bean>
+
+    <bean id="sessionFactoryR" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean" p:dataSource-ref="dataSourceR">
+        <property name="mappingResources">
+            <list>
+                <value>cluster/testUser.hbm.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <value>
+                hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
+                hibernate.hbm2ddl.auto=update
+                hibernate.show_sql=true
+                hibernate.format_sql=true
+            </value>
+        </property>
+    </bean>
+
+    <bean id="transactionManagerR"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+          p:sessionFactory-ref="sessionFactoryR"/>
+
+    <tx:advice id="txAdviceR" transaction-manager="transactionManagerR">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="beanPointcutR" expression="execution(* cluster..*.*(..)) " />
+        <aop:advisor advice-ref="txAdviceR" pointcut-ref="beanPointcutR" />
+    </aop:config>
+
+    <bean id="dataSourceW" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3307/test_master_slave?useUnicode=true&amp;characterEncoding=UTF-8" />
+        <property name="username" value="root" />
+        <property name="password" value="123456" />
+    </bean>
+
+    <bean id="sessionFactoryW" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean" p:dataSource-ref="dataSourceW">
+        <property name="mappingResources">
+            <list>
+                <value>cluster/testUser.hbm.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <value>
+                hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
+                hibernate.hbm2ddl.auto=update
+                hibernate.show_sql=true
+                hibernate.format_sql=true
+            </value>
+        </property>
+    </bean>
+
+    <bean id="transactionManagerW"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+          p:sessionFactory-ref="sessionFactoryW"/>
+
+    <tx:advice id="txAdviceW" transaction-manager="transactionManagerW">
+        <tx:attributes>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="beanPointcutW" expression="execution(* cluster..*.*(..)) " />
+        <aop:advisor advice-ref="txAdviceW" pointcut-ref="beanPointcutW" />
+    </aop:config>
+
+    <bean id="TestDaoR" class="cluster.TestDaoR">
+        <property name="sessionFactory" ref="sessionFactoryR"/>
+    </bean>
+
+    <bean id="TestDaoW" class="cluster.TestDaoW">
+        <property name="sessionFactory" ref="sessionFactoryW"/>
+    </bean>
+    -->
+
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
+          p:dataSource-ref="dataSource">
+        <property name="mappingResources">
+            <list>
+                <value>model/User.hbm.xml</value>
+                <value>model/Book.hbm.xml</value>
+                <value>model/Order.hbm.xml</value>
+                <value>model/OrderItem.hbm.xml</value>
+                <value>model/Category1.hbm.xml</value>
+                <value>model/Category2.hbm.xml</value>
+            </list>
+        </property>
+
+        <property name="hibernateProperties">
+            <value>
+                hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
+                hibernate.hbm2ddl.auto=update
+                hibernate.show_sql=true
+                hibernate.format_sql=true
+            </value>
+        </property>
+    </bean>
+
+
+
+    <!-- HibernateTransactionManager -->
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+          p:sessionFactory-ref="sessionFactory"/>
+
+
+
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="beanPointcut" expression="execution(* dao..*.*(..)) or execution(* service..*.*(..)) or execution(* common.utils.*.*(..)) " />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="beanPointcut" />
+    </aop:config>
+
+    <bean id="aop" class="aop.Aop"/>
+
+    <aop:config>
+        <aop:aspect ref="aop">
+            <aop:pointcut id="pc" expression="execution(* service.CartService.*(..)) and args(int,int)" />
+            <aop:before method="begin" pointcut="execution(* service.CartService.*(..)) and args(bookID,amount))" arg-names="bookID,amount" />
+            <aop:after method="after" pointcut="execution(* service.CartService.*(..)) and args(bookID,amount))" arg-names="bookID,amount" />
+            <aop:after-returning method="afterReturning" pointcut-ref="pc" />
+            <aop:after-throwing method="afterThrowing" pointcut-ref="pc" />
+            <aop:around method="around" pointcut-ref="pc" />
+        </aop:aspect>
+    </aop:config>
+
+    <mongo:mongo id="mongo" host="localhost" port="27017"/>
+    <mongo:db-factory id="mongoDbFactory" dbname="bookstore2"
+                      mongo-ref="mongo" />
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+    </bean>
+
+
+    <!-- Dao Bean -->
+    <bean id="baseDao" class="dao.impl.BaseDaoImpl">
+        <property name="sessionFactory" ref="sessionFactory"/>
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean id="userDao" class="dao.impl.UserDaoImpl" parent="baseDao" />
+    <bean id="imageDao" class="dao.impl.ImageDaoImpl" parent="baseDao" />
+    <bean id="bookDao" class="dao.impl.BookDaoImpl" parent="baseDao" />
+    <bean id="categoryDao" class="dao.impl.CategoryDaoImpl" parent="baseDao" />
+    <bean id="orderDao" class="dao.impl.OrderDaoImpl" parent="baseDao" />
+    <bean id="orderItemDao" class="dao.impl.OrderItemDaoImpl" parent="baseDao" />
+
+    <bean id="redisClient" class="redis.RedisClient"/>
+    <!-- Service Bean -->
+    <bean id="userService" class="service.imp.UserServiceImpl">
+        <property name="userDao" ref="userDao"/>
+        <property name="imageDao" ref="imageDao"/>
+    </bean>
+    <bean id="imageService" class="service.imp.ImageServiceImpl">
+        <property name="imageDao" ref="imageDao"/>
+    </bean>
+    <bean id="bookService" class="service.imp.BookServiceImpl">
+        <property name="bookDao" ref="bookDao"/>
+        <property name="imageDao" ref="imageDao"/>
+        <property name="categoryDao" ref="categoryDao"/>
+        <property name="redisClient" ref="redisClient"/>
+    </bean>
+    <bean id="adminService" class="service.imp.AdminServiceImpl">
+        <property name="bookDao" ref="bookDao"/>
+        <property name="userDao" ref="userDao"/>
+    </bean>
+    <bean id="cartService" class="service.imp.CartServiceImpl">
+        <property name="bookDao" ref="bookDao"/>
+    </bean>
+    <bean id="orderService" class="service.imp.OrderServiceImpl">
+        <property name="orderDao" ref="orderDao"/>
+        <property name="orderItemDao" ref="orderItemDao"/>
+        <property name="bookDao" ref="bookDao"/>
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
+    <!-- <bean id="springTool" class="common.utils.SpringTool"/> -->
+    <bean id="loginModule" class="service.imp.SimpleLoginModule">
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
+    <bean id="testWebService" class="webService.TestWebServiceImpl">
+        <property name="bookDao" ref="bookDao" />
+        <property name="orderDao" ref="orderDao" />
+    </bean>
+
+    <!--
+    <bean id="producerDemo" class="kafka.ProducerDemo">
+        <property name="properties">
+            <props>
+                <prop key="topic">my-replicated-topic</prop>
+                <prop key="bootstrap.servers">127.0.0.1:9092</prop>
+                <prop key="acks">all</prop>
+                <prop key="key.serializer">org.apache.kafka.common.serialization.StringSerializer</prop>
+                <prop key="value.serializer">org.apache.kafka.common.serialization.StringSerializer</prop>
+                <prop key="buffer.memory">33554432</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="consumerDemo" class="kafka.ReceiverDemo">
+        <property name="properties">
+            <props>
+                <prop key="topic">my-replicated-topic</prop>
+                <prop key="bootstrap.servers">127.0.0.1:9092</prop>
+                <prop key="group.id">test-consumer-group</prop>
+                <prop key="enable.auto.commit">true</prop>
+                <prop key="auto.commit.interval.ms">1000</prop>
+                <prop key="session.timeout.ms">60000</prop>
+                <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
+                <prop key="value.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="kafkaTest" class="kafka.KafkaController">
+        <property name="producerDemo" ref="producerDemo"/>
+        <property name="receiverDemo" ref="consumerDemo"/>
+    </bean>
+
+    -->
+
+    <bean id="producer" class="kafka.ProducerDemo"/>
+    <bean id="consumer" class="kafka.ReceiverDemo">
+        <!-- <property name="orderService" ref="orderService"/> -->
+    </bean>
+    <bean id="kafkaTest" class="kafka.KafkaController"></bean>
+
+
+
+    <!-- action -->
+    <bean id="testRmi" class="action.TestRmi">
+        <property name="orderService" ref="orderService"/>
+    </bean>
+    <bean id="authAction" class="action.AuthAction">
+        <property name="userService" ref="userService" />
+        <property name="loginModule" ref="loginModule" />
+    </bean>
+    <bean id="userAction" class="action.UserAction">
+        <property name="userService" ref="userService" />
+    </bean>
+    <bean id="imageAction" class="action.ImageAction">
+        <property name="imageService" ref="imageService" />
+    </bean>
+    <bean id="indexAction" class="action.IndexAction">
+        <property name="bookService" ref="bookService" />
+    </bean>
+    <bean id="adminAction" class="action.AdminAction">
+        <property name="adminService" ref="adminService"/>
+        <property name="bookService" ref="bookService" />
+        <property name="orderService" ref="orderService"/>
+    </bean>
+    <bean id="permissionAction" class="action.PermissionAction">
+        <property name="loginModule" ref="loginModule" />
+        <property name="userService" ref="userService" />
+        <property name="bookService" ref="bookService" />
+    </bean>
+    <bean id="bookAction" class="action.BookAction">
+        <property name="bookService" ref="bookService" />
+    </bean>
+    <bean id="cartAction" class="action.CartAction">
+        <property name="cartService" ref="cartService"/>
+    </bean>
+    <bean id="orderAction" class="action.OrderAction">
+        <property name="cartService" ref="cartService"/>
+        <property name="orderService" ref="orderService"/>
+    </bean>
+</beans>

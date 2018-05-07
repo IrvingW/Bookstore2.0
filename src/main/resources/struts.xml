@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+    <constant name="struts.custom.i18n.resources" value="global" />
+    <constant name="struts.i18n.encoding" value="UTF-8" />
+    <constant name="struts.devMode" value="true" />
+    <constant name="struts.action.excludePattern" value="/websocket" />
+
+    <package name="default" extends="struts-default,json-default" namespace="/">
+        <action name="*" class="action.IndexAction" method="{1}">
+            <result name="showIndex">/index.jsp</result>
+            <result name="success" type="redirectAction">
+                <param name="namespace">/</param>
+                <param name="actionName">index</param>
+            </result>
+            <result name="showHeader">/header.jsp</result>
+            <allowed-methods>header,index</allowed-methods>
+        </action>
+        <action name="locale" class="action.LocalAction" method="execute">
+            <result name="success">/index.jsp</result>
+        </action>
+    </package>
+
+    <package name="testRmi" extends="struts-default,json-default" namespace="/testRmi">
+        <action name="*" class="action.TestRmi" method="{1}">
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <result name="shipOrder" type="redirectAction">
+                <param name="actionName">showAllUserList</param>
+                <param name="namespace">/adminAction</param>
+            </result>
+            <result name="fail">/404.html</result>
+            <allowed-methods>
+                testrmi,shipOrder
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="testKafka" extends="struts-default,json-default" namespace="/testKafka">
+        <action name="*" class="kafka.KafkaController" method="{1}">
+            <result name="send">/kafka.jsp</result>
+            <result name="receive">/kafka.jsp</result>
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <allowed-methods>
+                send,receive
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="authAction" extends="struts-default,json-default" namespace="/authAction">
+        <action name="*" class="action.AuthAction" method="{1}">
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <result name="logout">/index.jsp</result>
+            <allowed-methods>
+                register,checkEmailAvailable,login,logout
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="userAction" extends="json-default,struts-default" namespace="/userAction">
+        <interceptors>
+            <interceptor name="isLogin" class="action.interceptor.isLoginInterceptor"/>
+            <interceptor-stack name="loginAuthCheck">
+                <interceptor-ref name="isLogin"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="loginAuthCheck"/>
+
+        <global-results>
+            <result name="login" type="redirect">/signin.jsp</result>
+        </global-results>
+        <action name="*" class="action.UserAction" method="{1}">
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <result name="showUserProfile">/userProfile.jsp</result>
+            <allowed-methods>
+                showUserProfile,updatePassword,updateUserPicture,updateUserProfile
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="bookAction" extends="json-default,struts-default" namespace="/bookAction">
+        <interceptors>
+            <interceptor name="isLogin" class="action.interceptor.isLoginInterceptor"/>
+        </interceptors>
+        <global-results>
+            <result name="login" type="redirect">/signin.jsp</result>
+        </global-results>
+
+        <action name="*" class="action.BookAction" method="{1}">
+            <result name="showBooks">/products.jsp</result>
+            <result name="showBookProfile">/productDetail.jsp</result>
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <allowed-methods>
+                getInfoByIsbn,showAllBooks,showBookProfile
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="cartAction" extends="struts-default,json-default" namespace="/cartAction">
+        <action name="*" class="action.CartAction" method="{1}">
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <result name="addOneToCart" type="redirectAction">
+                <param name="actionName">showBuyCart</param>
+            </result>
+            <result name="removeOneFromCart" type="redirectAction">
+                <param name="actionName">showBuyCart</param>
+            </result>
+            <result name="emptyBuyCart" type="redirectAction">
+                <param name="actionName">showBuyCart</param>
+            </result>
+            <result name="showBuyCart">/cart.jsp</result>
+            <allowed-methods>
+                addToBuyCart,emptyBuyCart,showBuyCart,addOneToCart,removeOneFromCart
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="imageAction" extends="struts-default,json-default" namespace="/imageAction">
+        <action name="*" class="action.ImageAction" method="{1}">
+            <result name="showImage" type="stream">
+                <param name="contentDisposition">inline;filename="${imageFileName}"</param>
+                <param name="inputName">imageFile</param>
+                <param name="contentType">${contentType}</param>
+            </result>
+            <result name="showImageError" type="httpheader">
+                <param name="status">404</param>
+            </result>
+            <allowed-methods>
+                showImage
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="orderAction" extends="json-default,struts-default" namespace="/orderAction">
+        <interceptors>
+            <interceptor name="isLogin" class="action.interceptor.isLoginInterceptor"/>
+            <interceptor-stack name="loginAuthCheck">
+                <interceptor-ref name="isLogin"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="loginAuthCheck"/>
+
+        <global-results>
+            <result name="login" type="redirect">/signin.jsp</result>
+        </global-results>
+        <action name="*" class="action.OrderAction" method="{1}">
+            <result name="buyCheckout">/checkout.jsp</result>
+            <result name="showMyOrder">/myOrder.jsp</result>
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <allowed-methods>
+                buyCheckout,createOrder,showMyOrder
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="adminAction" extends="struts-default,json-default" namespace="/adminAction">
+        <interceptors>
+            <interceptor name="isAdmin" class="action.interceptor.isAdminInterceptor"/>
+            <interceptor-stack name="adminAuthCheck">
+                <interceptor-ref name="isAdmin"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="adminAuthCheck"/>
+
+        <global-results>
+            <result name="403" type="redirect">/signin.jsp</result>
+            <result name="login" type="redirect">/signin.jsp</result>
+        </global-results>
+        <action name="*" class="action.AdminAction" method="{1}">
+            <result name="showAllUserList">/adminUser.jsp</result>
+            <result name="showBookRelease">/addBook.jsp</result>
+            <result name="deleteUser" type="redirectAction">
+                <param name="namespace">/adminAction</param>
+                <param name="actionName">showAllUserList</param>
+            </result>
+            <result name="resetPassword" type="redirectAction">
+                <param name="namespace">/adminAction</param>
+                <param name="actionName">showAllUserList</param>
+            </result>
+            <result name="addUser" type="redirectAction">
+                <param name="namespace">/adminAction</param>
+                <param name="actionName">showAllUserList</param>
+            </result>
+            <result name="updateUser" type="redirectAction">
+                <param name="namespace">/adminAction</param>
+                <param name="actionName">showAllUserList</param>
+            </result>
+            <result name="uploadBook" type="redirectAction">
+                <param name="namespace">/adminAction</param>
+                <param name="actionName">showAllUserList</param>
+            </result>
+            <result name="ajax" type="json">
+                <param name="root">params</param>
+            </result>
+            <allowed-methods>
+                showAllUserList,deleteUser,addUser,updateUser,getOldUserInfo,showBookRelease,uploadBook
+            </allowed-methods>
+        </action>
+    </package>
+
+    <package name="permissionAction" extends="struts-default,json-default" namespace="/permissionAction">
+        <action name="*" class="action.PermissionAction" method="{1}">
+            <result name="showAllBooks">/products.jsp</result>
+            <result name="fail">/404.html</result>
+            <result name="success" type="redirectAction">
+                <param name="actionName">/index</param>
+                <param name="namespace">/indexAction</param>
+            </result>
+            <allowed-methods>
+                showAllBooks,LoginAuth
+            </allowed-methods>
+        </action>
+    </package>
+</struts>
